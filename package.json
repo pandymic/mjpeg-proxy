@@ -1,0 +1,24 @@
+{
+  "name": "mjpeg-proxy",
+  "version": "1.0.0",
+  "description": "Proxy server to read single mjpeg stream and handle multiple connections. Performs basic transform operations on the original stream before retrasmission.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pandymic/mjpeg-proxy.git"
+  },
+  "author": "Michal Pandyra <mike@pandymic.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pandymic/mjpeg-proxy/issues"
+  },
+  "homepage": "https://github.com/pandymic/mjpeg-proxy#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "sharp": "^0.33.5"
+  }
+}
