@@ -6,7 +6,11 @@ Tired of your camera stream buckling under the pressure of more than one viewer?
 
 Well, have I got the Node.js project for you! This is a highly-efficient, single-source MJPEG proxy server designed to handle multiple clients while performing on-the-fly transformations.
 
-## Features
+## Topics 🏷️
+
+`mjpeg` `mjpeg-proxy` `video-streaming` `nodejs` `express` `sharp` `image-processing` `hot-reload`
+
+## Features 🚀
 
 *   **Efficient Fan-Out**: Connects to one MJPEG stream and broadcasts it to many clients. No more overwhelming your poor underpowered camera source.
 *   **Lazy Connection**: Only connects to the source stream when the first client arrives, and disconnects when the last one leaves. Smart!
@@ -15,7 +19,7 @@ Well, have I got the Node.js project for you! This is a highly-efficient, single
 *   **Hot-Reloadable Transformations**: Edit the frame transformation logic and watch it apply *instantly* without restarting the server. It's basically magic. 🧙‍♂️
 *   **Flexible Configuration**: Configure via command-line arguments or environment variables.
 
-## Installation
+## Installation 📦
 
 1.  Clone the repository:
     ```bash
@@ -30,7 +34,7 @@ Well, have I got the Node.js project for you! This is a highly-efficient, single
     npm install
     ```
 
-## Usage
+## Usage ▶️
 
 Fire it up! The `mjpegUrl` is a required parameter. You can provide it as a command-line argument or an environment variable.
 
@@ -39,7 +43,7 @@ Fire it up! The `mjpegUrl` is a required parameter. You can provide it as a comm
 To pass arguments to an npm script, you must use `--` after `npm run start`.
 
 ```bash
-npm run start -- --mjpegUrl=http://my-camera-ip/stream --port=9000
+npm run start -- --mjpegUrl="http://my-camera-ip/stream" --port=9000
 ```
 
 #### Using Environment Variables
@@ -50,7 +54,7 @@ export PORT="9000"
 npm run start
 ```
 
-## Configuration
+## Configuration ⚙️
 
 The application can be configured using command-line arguments (e.g., `--port=8080`) or environment variables (e.g., `PORT=8080`). Command-line arguments take precedence.
 
@@ -84,4 +88,3 @@ The running server will automatically detect the change and apply the new transf
 ## License
 
 This project is licensed under the ISC License. See the `LICENSE.md` file for details.
-

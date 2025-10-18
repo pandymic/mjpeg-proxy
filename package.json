@@ -1,12 +1,31 @@
 {
   "name": "mjpeg-proxy",
   "version": "1.0.0",
-  "description": "Proxy server to read single mjpeg stream and handle multiple connections. Performs basic transform operations on the original stream before retrasmission.",
+  "description": "A highly-efficient Node.js MJPEG proxy that fans out a single stream to multiple clients, featuring on-the-fly, hot-reloadable image transformations and resilient, lazy connection handling.",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "src/",
+    "LICENSE.md",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "mjpeg",
+    "mjpeg-proxy",
+    "video-streaming",
+    "nodejs",
+    "express",
+    "sharp",
+    "image-processing",
+    "hot-reload"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pandymic/mjpeg-proxy.git"
