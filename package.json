@@ -1,27 +1,27 @@
 {
   "name": "mjpeg-proxy",
   "version": "1.0.0",
-  "description": "A highly-efficient Node.js MJPEG proxy that fans out a single stream to multiple clients, featuring on-the-fly, hot-reloadable image transformations and resilient, lazy connection handling.",
+  "description": "MJPEG proxy that fans out a single camera stream to many clients, with hot-reloadable frame transforms and lazy, retrying source connections.",
   "main": "index.js",
   "files": [
     "index.js",
     "src/",
+    "deploy/",
     "LICENSE.md",
     "README.md"
   ],
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22"
   },
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "keywords": [
     "mjpeg",
     "mjpeg-proxy",
     "video-streaming",
     "nodejs",
-    "express",
     "sharp",
     "image-processing",
     "hot-reload"
@@ -37,7 +37,6 @@
   },
   "homepage": "https://github.com/pandymic/mjpeg-proxy#readme",
   "dependencies": {
-    "express": "^5.1.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.35.5"
   }
 }

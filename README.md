@@ -1,90 +1,191 @@
-# MJPEG Proxy Server 📹
+# MJPEG Proxy Server
 
 ![Works on my machine](https://img.shields.io/badge/works%20on-my%20machine-blue)
 
-Tired of your camera stream buckling under the pressure of more than one viewer? Do you wish you could just... turn your video feed upside down on a whim? 
+Most cheap IP cameras struggle with more than one viewer. This proxy holds a single connection to the camera's MJPEG stream and serves it to as many clients as you like. It can also run each frame through a transform (rotate, crop, greyscale, and so on) that you can edit while the server is running.
 
-Well, have I got the Node.js project for you! This is a highly-efficient, single-source MJPEG proxy server designed to handle multiple clients while performing on-the-fly transformations.
+## Features
 
-## Topics 🏷️
+- **Fan-out.** One upstream connection, any number of viewers.
+- **Lazy connection.** Connects to the source when the first viewer arrives and disconnects when the last one leaves.
+- **Retries.** Reconnects automatically after a dropped or stalled source, up to a configurable number of attempts.
+- **Placeholders.** Viewers see a status image while the source is connecting or unavailable.
+- **Hot-reloadable transforms.** Edit the transform file and the change applies to the live stream, without a restart.
+- **Slow clients don't hold anything up.** A viewer that can't keep up gets frames dropped instead of building up a backlog in memory.
+- **Optional viewer limit.** Cap concurrent viewers, or leave it unlimited.
+- **Status page and health check.** Read-only, no authentication, no sensitive details.
 
-`mjpeg` `mjpeg-proxy` `video-streaming` `nodejs` `express` `sharp` `image-processing` `hot-reload`
+## Requirements
 
-## Features 🚀
+- Node.js 22 or later
+- [sharp](https://sharp.pixelplumbing.com/), the only dependency, which ships prebuilt binaries for most platforms
 
-*   **Efficient Fan-Out**: Connects to one MJPEG stream and broadcasts it to many clients. No more overwhelming your poor underpowered camera source.
-*   **Lazy Connection**: Only connects to the source stream when the first client arrives, and disconnects when the last one leaves. Smart!
-*   **Resilient Retries**: If the source stream drops, it will automatically try to reconnect with a configurable delay and number of attempts.
-*   **Informative Placeholders**: Displays a helpful placeholder image to clients during connection attempts or failures.
-*   **Hot-Reloadable Transformations**: Edit the frame transformation logic and watch it apply *instantly* without restarting the server. It's basically magic. 🧙‍♂️
-*   **Flexible Configuration**: Configure via command-line arguments or environment variables.
-
-## Installation 📦
-
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/pandymic/mjpeg-proxy.git
-    ```
-2.  Navigate into the project directory:
-    ```bash
-    cd mjpeg-proxy
-    ```
-3.  Install the dependencies:
-    ```bash
-    npm install
-    ```
-
-## Usage ▶️
-
-Fire it up! The `mjpegUrl` is a required parameter. You can provide it as a command-line argument or an environment variable.
-
-#### Using Command-Line Arguments
-
-To pass arguments to an npm script, you must use `--` after `npm run start`.
+## Installation
 
 ```bash
-npm run start -- --mjpegUrl="http://my-camera-ip/stream" --port=9000
+git clone https://github.com/pandymic/mjpeg-proxy.git
+cd mjpeg-proxy
+npm install --omit=dev
 ```
 
-#### Using Environment Variables
+## Usage
+
+The source URL is required. Pass it as an argument or an environment variable.
 
 ```bash
-export MJPEG_URL="http://my-camera-ip/stream"
-export PORT="9000"
-npm run start
+node index.js --mjpegUrl="http://camera.local/stream" --port=9000
 ```
 
-## Configuration ⚙️
+```bash
+MJPEG_URL="http://camera.local/stream" LISTEN_PORT=9000 npm start
+```
 
-The application can be configured using command-line arguments (e.g., `--port=8080`) or environment variables (e.g., `PORT=8080`). Command-line arguments take precedence.
+When running through npm, put `--` before the arguments: `npm start -- --mjpegUrl=...`.
 
-| Argument / Variable | Description                                       | Default                            |
-| ------------------- | ------------------------------------------------- | ---------------------------------- |
-| `mjpegUrl`          | **(Required)** The URL of the source MJPEG stream.  | *None*                             |
-| `host`              | The host address for the server to listen on.     | `localhost`                        |
-| `port`              | The port for the server to listen on.             | `48080`                            |
-| `maxRetries`        | Max number of reconnection attempts.              | `5`                                |
-| `retryInterval`     | Time in milliseconds between retry attempts.      | `2500`                             |
+`node index.js --help` lists every option.
 
-## Hot-Reloading Magic ✨
+## Configuration
 
-This is where the real fun begins. You can modify the image processing logic in real-time.
+Command-line arguments take precedence over environment variables.
 
-1.  Open the file: `/src/frame-transformer.js`
-2.  Make any changes you want to the `transformFrame` function using the Sharp API.
+| Argument        | Variable         | Description                                                    | Default                    |
+| --------------- | ---------------- | -------------------------------------------------------------- | -------------------------- |
+| `mjpegUrl`      | `MJPEG_URL`      | **Required.** Source stream URL, `http` or `https`.            |                            |
+| `host`          | `LISTEN_HOST`    | Address to listen on.                                          | `127.0.0.1`                |
+| `port`          | `LISTEN_PORT`    | Port to listen on.                                             | `48080`                    |
+| `maxAttempts`   | `MAX_ATTEMPTS`   | Connection attempts before giving up.                          | `5`                        |
+| `retryInterval` | `RETRY_INTERVAL` | Delay between attempts, in milliseconds.                       | `2500`                     |
+| `timeout`       | `SOURCE_TIMEOUT` | Milliseconds without data before the source counts as stalled. | `10000`                    |
+| `maxClients`    | `MAX_CLIENTS`    | Maximum concurrent viewers. `0` means unlimited.               | `0`                        |
+| `transformer`   | `TRANSFORMER`    | Path to the frame transformer module.                          | `src/frame-transformer.js` |
 
-    For example, to make the stream greyscale instead of rotated:
-    ```javascript
-    // from:
-    return sharp( frameBuffer ).rotate( 180 ).toBuffer()
+The server listens on loopback only by default. Set `LISTEN_HOST=0.0.0.0` (or `::`) to accept connections from other machines. If you do, consider setting `MAX_CLIENTS`: each viewer holds an open connection for as long as it watches, and viewers beyond the limit get a `503` response.
 
-    // to:
-    return sharp( frameBuffer ).greyscale().toBuffer()
-    ```
-3.  Save the file.
+Credentials in the source URL (`http://user:pass@camera/stream`) are sent to the camera using HTTP Basic auth. They are removed from log lines and placeholder images, along with any query string.
 
-The running server will automatically detect the change and apply the new transformation to the stream. No restarts, no downtime.
+After the last retry fails, viewers keep seeing a "Stream Unavailable" placeholder. The next viewer to connect starts a new round of attempts.
+
+## Endpoints
+
+| Path      | Description                                                     |
+| --------- | --------------------------------------------------------------- |
+| `/stream` | The MJPEG stream (`multipart/x-mixed-replace`).                 |
+| `/`       | Status page. Refreshes every 5 seconds.                         |
+| `/health` | The same information as JSON, for monitoring.                   |
+
+The status endpoints report only states and counters: source state, client count, frame rate, frame counts, retry count, and transformer state. They never include the source URL, addresses, file paths or error messages. Loading them does not connect to the source.
+
+```json
+{
+  "status": "ok",
+  "uptime": 3600,
+  "stream": {
+    "state": "streaming",
+    "clients": 2,
+    "maxClients": 0,
+    "failedAttempts": 0,
+    "maxAttempts": 5,
+    "fps": 15,
+    "lastFrameAgeMs": 40,
+    "framesReceived": 54000,
+    "framesDropped": 12
+  },
+  "transformer": {
+    "state": "active",
+    "loadedAt": "2026-01-01T00:00:00.000Z",
+    "loadFailures": 0,
+    "errors": 0
+  }
+}
+```
+
+`stream.state` is one of `idle` (no viewers), `connecting`, `streaming`, `retrying` or `failed`. `transformer.state` is `active`, `passthrough` (nothing loaded) or `disabled` (bypassed after repeated errors).
+
+## Frame transforms
+
+The transformer is a CommonJS module that exports `transformFrame( frame, context )`. It receives each JPEG frame as a Buffer and must return a JPEG Buffer, or a Promise that resolves to one. `context.sharp` is the [sharp](https://sharp.pixelplumbing.com/api-operation) module, and `context.config` is a read-only copy of the settings without the source URL.
+
+The default file, `src/frame-transformer.js`, draws a welcome notice over the stream. It's there to show the proxy is working, and it explains how to remove itself. To pass frames through untouched, change the body of `transformFrame` to:
+
+```javascript
+return frame;
+```
+
+To rotate the image 180 degrees:
+
+```javascript
+return sharp( frame ).rotate( 180 ).toBuffer();
+```
+
+To make it greyscale:
+
+```javascript
+return sharp( frame ).greyscale().toBuffer();
+```
+
+Save the file and the running server picks up the change. You can also force a reload with `kill -HUP <pid>` or `systemctl reload mjpeg-proxy`.
+
+To keep a local transform out of the git checkout, put it somewhere else and point `TRANSFORMER` at it. Use `context.sharp` there instead of `require( 'sharp' )`, since that path won't have its own `node_modules`.
+
+### Safety
+
+The loader guards against the usual ways a live edit can go wrong:
+
+- A file that fails to load (syntax error, exception at load time, missing `transformFrame`) is rejected, and the previously loaded transform keeps running.
+- If a transform throws, rejects, returns something that isn't a JPEG, or takes longer than 5 seconds, the original frame is sent instead.
+- After 10 failures in a row, the transform is bypassed until the file is saved again or a reload is requested.
+- Only one transform runs at a time. If frames arrive faster than they can be processed, the backlog is dropped and only the newest frame is kept, so latency stays low and frames stay in order.
+- World-writable files are refused.
+- If the module sets up timers or other resources at load time, export a `dispose()` function to release them. It is called before the module is replaced.
+
+### Caveats
+
+The loader limits the damage from mistakes, but it is not a sandbox:
+
+- The transformer runs inside the server process with the server's privileges. It can read anything the server can read, open network connections, and so on. Only load code you trust.
+- The 5-second timeout only catches asynchronous work. A synchronous infinite loop, or any long-running synchronous code, blocks the whole server: every viewer freezes and the status endpoints stop answering. Under systemd, the only way out is a restart. Running transforms in a worker thread would prevent this, but isn't done here.
+- Every transform decodes and re-encodes the JPEG, so it costs CPU on every frame. The default welcome overlay takes about 10 ms per frame at 640x480 and about 45 ms at 1080p. If you don't need a transform, `return frame;` costs nothing.
+
+## Running with systemd
+
+`deploy/` contains a hardened unit file and an example environment file. The unit runs the service as a temporary unprivileged user (`DynamicUser`), with a read-only view of the file system, no capabilities and a restricted set of system calls.
+
+```bash
+sudo cp -r . /opt/mjpeg-proxy                 # or clone directly into /opt/mjpeg-proxy
+cd /opt/mjpeg-proxy && sudo npm ci --omit=dev
+
+sudo install -d -m 0755 /etc/mjpeg-proxy
+sudo install -m 0600 deploy/mjpeg-proxy.env /etc/mjpeg-proxy/mjpeg-proxy.env
+sudo install -m 0644 deploy/mjpeg-proxy.service /etc/systemd/system/mjpeg-proxy.service
+sudoedit /etc/mjpeg-proxy/mjpeg-proxy.env    # set MJPEG_URL
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now mjpeg-proxy
+```
+
+Useful commands:
+
+```bash
+systemctl status mjpeg-proxy
+journalctl -u mjpeg-proxy -f
+sudo systemctl reload mjpeg-proxy            # reload the frame transformer
+curl -s http://127.0.0.1:48080/health
+```
+
+Notes:
+
+- The unit expects Node at `/usr/bin/node` and the code at `/opt/mjpeg-proxy`. Edit `ExecStart` if yours differ.
+- `ProtectHome=yes` hides `/home`, so a Node installed with nvm in a home directory won't be reachable. Install Node 22 system-wide (from your distribution or NodeSource), or point `ExecStart` at a copy outside `/home`.
+- The project files must be readable by any user (the usual `0644`/`0755`), because the service user is created when the service starts.
+- The environment file stays readable by root only. systemd reads it before dropping privileges, so credentials in `MJPEG_URL` aren't exposed to the service user.
+- `systemd-analyze security mjpeg-proxy` shows how the hardening scores.
+
+## Development
+
+```bash
+npm test
+```
 
 ## License
 
-This project is licensed under the ISC License. See the `LICENSE.md` file for details.
+ISC. See `LICENSE.md`.
