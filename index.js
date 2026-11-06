@@ -7,7 +7,7 @@ const { start } = require( './src/server' );
 const OPTIONS = {
   mjpegUrl: { env: 'MJPEG_URL', description: 'Source MJPEG stream URL (required, http or https)' },
   host: { env: 'LISTEN_HOST', description: 'Address to listen on', default: '127.0.0.1' },
-  port: { env: 'LISTEN_PORT', description: 'Port to listen on', default: '48080' },
+  port: { env: 'LISTEN_PORT', description: 'Port to listen on', default: '48093' },
   maxAttempts: { env: 'MAX_ATTEMPTS', description: 'Connection attempts before giving up', default: '5' },
   retryInterval: { env: 'RETRY_INTERVAL', description: 'Delay between attempts, in ms', default: '2500' },
   timeout: { env: 'SOURCE_TIMEOUT', description: 'Source inactivity timeout, in ms', default: '10000' },

@@ -52,7 +52,7 @@ Command-line arguments take precedence over environment variables.
 | --------------- | ---------------- | -------------------------------------------------------------- | -------------------------- |
 | `mjpegUrl`      | `MJPEG_URL`      | **Required.** Source stream URL, `http` or `https`.            |                            |
 | `host`          | `LISTEN_HOST`    | Address to listen on.                                          | `127.0.0.1`                |
-| `port`          | `LISTEN_PORT`    | Port to listen on.                                             | `48080`                    |
+| `port`          | `LISTEN_PORT`    | Port to listen on.                                             | `48093`                    |
 | `maxAttempts`   | `MAX_ATTEMPTS`   | Connection attempts before giving up.                          | `5`                        |
 | `retryInterval` | `RETRY_INTERVAL` | Delay between attempts, in milliseconds.                       | `2500`                     |
 | `timeout`       | `SOURCE_TIMEOUT` | Milliseconds without data before the source counts as stalled. | `10000`                    |
@@ -169,7 +169,7 @@ Useful commands:
 systemctl status mjpeg-proxy
 journalctl -u mjpeg-proxy -f
 sudo systemctl reload mjpeg-proxy            # reload the frame transformer
-curl -s http://127.0.0.1:48080/health
+curl -s http://127.0.0.1:48093/health
 ```
 
 Notes:
